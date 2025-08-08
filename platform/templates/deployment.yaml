@@ -1,0 +1,69 @@
+{{- if .Values.workload.deployment.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "platform.fullname" . }}
+  labels:
+    app: {{ include "platform.fullname" . }}
+spec:
+  replicas: {{ .Values.workload.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "platform.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "platform.fullname" . }}
+    spec:
+      containers:
+        - name: {{ include "platform.fullname" . }}
+          image: "{{ .Values.workload.deployment.image.repository }}:{{ .Values.workload.deployment.image.tag }}"
+
+          {{- if .Values.workload.deployment.command }}
+          command: {{ toJson .Values.workload.deployment.command }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.args }}
+          args: {{ toJson .Values.workload.deployment.args }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.ports }}
+          ports:
+            {{- range .Values.workload.deployment.ports }}
+            - containerPort: {{ .containerPort }}
+            {{- end }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.env }}
+          env:
+            {{- range .Values.workload.deployment.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.resources }}
+          resources:
+            {{- toYaml .Values.workload.deployment.resources | nindent 12 }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.volumeMounts }}
+          volumeMounts:
+            {{- toYaml .Values.workload.deployment.volumeMounts | nindent 12 }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.workload.deployment.livenessProbe | nindent 12 }}
+          {{- end }}
+
+          {{- if .Values.workload.deployment.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.workload.deployment.readinessProbe | nindent 12 }}
+          {{- end }}
+
+      {{- if .Values.workload.deployment.volumes }}
+      volumes:
+        {{- toYaml .Values.workload.deployment.volumes | nindent 8 }}
+      {{- end }}
+{{- end }}
