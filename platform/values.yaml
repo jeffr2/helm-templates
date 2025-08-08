@@ -3,18 +3,41 @@ workload:
     enabled: false
     name: ""
     replicaCount: 1
-    image:
-      repository: ""
-      tag: ""
-    ports: []
-    env: []
-    resources: {}
-    command: []
-    args: []
-    volumeMounts: []
-    livenessProbe: {}
-    readinessProbe: {}
+
+    containers:
+      - name: ""
+        enabled: true
+        image:
+          repository: ""
+          tag: ""
+        command: []
+        args: []
+        ports: []
+        env: []
+        envFrom: []
+        resources: {}
+        volumeMounts: []
+        livenessProbe: {}
+        readinessProbe: {}
+
+    initContainers:
+      - name: ""
+        enabled: false
+        image:
+          repository: ""
+          tag: ""
+        command: []
+        args: []
+        env: []
+        envFrom: []
+        resources: {}
+        volumeMounts: []
+
     volumes: []
+
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
 
   cronjob:
     enabled: false
