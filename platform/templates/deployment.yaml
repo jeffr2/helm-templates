@@ -14,53 +14,117 @@ spec:
     metadata:
       labels:
         app: {{ include "platform.fullname" . }}
+      annotations:
+        {{- /* Checksum para reiniciar o pod se ConfigMap/Secret mudar */}}
+        {{- if .Values.workload.configmap.enabled }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.workload.secret.enabled }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+
     spec:
+      {{- if .Values.workload.deployment.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.workload.deployment.nodeSelector | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.workload.deployment.affinity }}
+      affinity:
+        {{- toYaml .Values.workload.deployment.affinity | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.workload.deployment.tolerations }}
+      tolerations:
+        {{- toYaml .Values.workload.deployment.tolerations | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.workload.deployment.initContainers }}
+      initContainers:
+        {{- range .Values.workload.deployment.initContainers }}
+        {{- if .enabled }}
+        - name: {{ .name }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
+          {{- if .command }}
+          command: {{ toJson .command }}
+          {{- end }}
+          {{- if .args }}
+          args: {{ toJson .args }}
+          {{- end }}
+          {{- if .env }}
+          env:
+            {{- range .env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+          {{- end }}
+          {{- if .volumeMounts }}
+          volumeMounts:
+            {{- toYaml .volumeMounts | nindent 12 }}
+          {{- end }}
+          {{- if .resources }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+
       containers:
-        - name: {{ include "platform.fullname" . }}
-          image: "{{ .Values.workload.deployment.image.repository }}:{{ .Values.workload.deployment.image.tag }}"
+        {{- range .Values.workload.deployment.containers }}
+        {{- if .enabled }}
+        - name: {{ .name }}
+          image: "{{ .image.repository }}:{{ .image.tag }}"
 
-          {{- if .Values.workload.deployment.command }}
-          command: {{ toJson .Values.workload.deployment.command }}
+          {{- if .command }}
+          command: {{ toJson .command }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.args }}
-          args: {{ toJson .Values.workload.deployment.args }}
+          {{- if .args }}
+          args: {{ toJson .args }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.ports }}
+          {{- if .ports }}
           ports:
-            {{- range .Values.workload.deployment.ports }}
+            {{- range .ports }}
             - containerPort: {{ .containerPort }}
             {{- end }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.env }}
+          {{- if .env }}
           env:
-            {{- range .Values.workload.deployment.env }}
+            {{- range .env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
             {{- end }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.resources }}
-          resources:
-            {{- toYaml .Values.workload.deployment.resources | nindent 12 }}
+          {{- if .envFrom }}
+          envFrom:
+            {{- toYaml .envFrom | nindent 12 }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.volumeMounts }}
+          {{- if .volumeMounts }}
           volumeMounts:
-            {{- toYaml .Values.workload.deployment.volumeMounts | nindent 12 }}
+            {{- toYaml .volumeMounts | nindent 12 }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.livenessProbe }}
+          {{- if .livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.workload.deployment.livenessProbe | nindent 12 }}
+            {{- toYaml .livenessProbe | nindent 12 }}
           {{- end }}
 
-          {{- if .Values.workload.deployment.readinessProbe }}
+          {{- if .readinessProbe }}
           readinessProbe:
-            {{- toYaml .Values.workload.deployment.readinessProbe | nindent 12 }}
+            {{- toYaml .readinessProbe | nindent 12 }}
           {{- end }}
+
+          {{- if .resources }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
 
       {{- if .Values.workload.deployment.volumes }}
       volumes:
