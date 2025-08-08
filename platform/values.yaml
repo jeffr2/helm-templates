@@ -1,0 +1,51 @@
+workload:
+  deployment:
+    enabled: false
+    name: ""
+    replicaCount: 1
+    image:
+      repository: ""
+      tag: ""
+    ports: []
+    env: []
+    resources: {}
+    command: []
+    args: []
+    volumeMounts: []
+    livenessProbe: {}
+    readinessProbe: {}
+    volumes: []
+
+  cronjob:
+    enabled: false
+    name: ""
+    schedule: "*/5 * * * *"
+    image:
+      repository: ""
+      tag: ""
+    command: []
+    args: []
+    env: []
+    resources: {}
+    volumeMounts: []
+    volumes: []
+
+  service:
+    enabled: false
+    port: 80
+
+  ingress:
+    enabled: false
+    host: ""
+
+  configmap:
+    enabled: false
+    items: []
+
+  secret:
+    enabled: false
+    items: []
+
+  persistentVolumeClaim:
+    enabled: false
+    items: []
