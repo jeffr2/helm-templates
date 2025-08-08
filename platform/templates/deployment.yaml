@@ -15,14 +15,12 @@ spec:
       labels:
         app: {{ include "platform.fullname" . }}
       annotations:
-        {{- /* Checksum para reiniciar o pod se ConfigMap/Secret mudar */}}
         {{- if .Values.workload.configmap.enabled }}
         checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- if .Values.workload.secret.enabled }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
-
     spec:
       {{- if .Values.workload.deployment.nodeSelector }}
       nodeSelector:
@@ -58,6 +56,14 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
           {{- end }}
+          {{- if .envFrom }}
+          envFrom:
+            {{- range .envFrom }}
+            {{- if or (not (hasKey . "enabled")) .enabled }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- end }}
+          {{- end }}
           {{- if .volumeMounts }}
           volumeMounts:
             {{- toYaml .volumeMounts | nindent 12 }}
@@ -75,22 +81,18 @@ spec:
         {{- if .enabled }}
         - name: {{ .name }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
-
           {{- if .command }}
           command: {{ toJson .command }}
           {{- end }}
-
           {{- if .args }}
           args: {{ toJson .args }}
           {{- end }}
-
           {{- if .ports }}
           ports:
             {{- range .ports }}
             - containerPort: {{ .containerPort }}
             {{- end }}
           {{- end }}
-
           {{- if .env }}
           env:
             {{- range .env }}
@@ -98,27 +100,26 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
           {{- end }}
-
           {{- if .envFrom }}
           envFrom:
-            {{- toYaml .envFrom | nindent 12 }}
+            {{- range .envFrom }}
+            {{- if or (not (hasKey . "enabled")) .enabled }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- end }}
           {{- end }}
-
           {{- if .volumeMounts }}
           volumeMounts:
             {{- toYaml .volumeMounts | nindent 12 }}
           {{- end }}
-
           {{- if .livenessProbe }}
           livenessProbe:
             {{- toYaml .livenessProbe | nindent 12 }}
           {{- end }}
-
           {{- if .readinessProbe }}
           readinessProbe:
             {{- toYaml .readinessProbe | nindent 12 }}
           {{- end }}
-
           {{- if .resources }}
           resources:
             {{- toYaml .resources | nindent 12 }}
