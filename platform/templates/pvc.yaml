@@ -1,4 +1,4 @@
-{{- if and .Values.workload.persistentVolumeClaim.enabled (gt (len .Values.workload.persistentVolumeClaims.items) 0) }}
+{{- if and .Values.workload.persistentVolumeClaim.enabled (gt (len .Values.workload.persistentVolumeClaim.items) 0) }}
 {{- range .Values.workload.persistentVolumeClaim.items }}
 apiVersion: v1
 kind: PersistentVolumeClaim
