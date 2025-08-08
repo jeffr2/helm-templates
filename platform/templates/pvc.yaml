@@ -1,0 +1,20 @@
+{{- if and .Values.workload.persistentVolumeClaim.enabled (gt (len .Values.workload.persistentVolumeClaims.items) 0) }}
+{{- range .Values.workload.persistentVolumeClaim.items }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "platform.named" (dict "name" .name "suffix" "pvc") }}
+spec:
+  accessModes:
+    {{- range .accessModes }}
+    - {{ . }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .storage }}
+  {{- if .storageClassName }}
+  storageClassName: {{ .storageClassName }}
+  {{- end }}
+---
+{{- end }}
+{{- end }}
