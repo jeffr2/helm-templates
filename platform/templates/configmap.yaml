@@ -1,0 +1,13 @@
+{{- if .Values.workload.configmap.enabled }}
+{{- range .Values.workload.configmap.items }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "platform.named" (dict "name" .name "suffix" "cm") }}
+data:
+  {{- range $key, $value := .data }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+---
+{{- end }}
+{{- end }}
