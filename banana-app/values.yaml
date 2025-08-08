@@ -1,0 +1,47 @@
+platform:
+  workload:
+    deployment:
+      enabled: true
+      replicaCount: 2
+      image:
+        repository: registry/banana-app
+        tag: latest
+      ports:
+        - containerPort: 8080
+      env:
+        - name: ENVIRONMENT
+          value: development
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "250m"
+          memory: "256Mi"
+      command: ["/bin/banana-start"]
+      args: ["--serve"]
+
+      volumeMounts:
+        - name: banana-config
+          mountPath: /usr/share/banana
+
+      volumes:
+        - name: banana-config
+          configMap:
+            name: banana-settings-cm
+
+    configmap:
+      enabled: true
+      items:
+        - name: banana-settings
+          data:
+            FEATURE_X: "true"
+            MODE: "dev"
+    
+    service:
+      enabled: true
+      port: 80
+    
+    ingress:
+      enabled: true
+      host: banana.local
