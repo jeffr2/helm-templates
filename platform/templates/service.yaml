@@ -1,0 +1,12 @@
+{{- if .Values.workload.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "platform.named" (dict "name" (include "platform.fullname" .) "suffix" "svc") }}
+spec:
+  selector:
+    app: {{ include "platform.fullname" . }}
+  ports:
+    - port: {{ .Values.workload.service.port }}
+      targetPort: {{ (index .Values.workload.deployment.ports 0).containerPort }}
+{{- end }}
