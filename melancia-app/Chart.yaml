@@ -1,0 +1,9 @@
+apiVersion: v2
+name: melancia-app
+description: App exemplo usando platform como subchart
+type: application
+version: 0.1.0
+dependencies:
+  - name: platform
+    version: "1.0.0"
+    repository: "file://../platform"

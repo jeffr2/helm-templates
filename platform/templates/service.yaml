@@ -4,9 +4,18 @@ kind: Service
 metadata:
   name: {{ include "platform.named" (dict "name" (include "platform.fullname" .) "suffix" "svc") }}
 spec:
+  type: {{ default "ClusterIP" .Values.workload.service.type }}
   selector:
     app: {{ include "platform.fullname" . }}
   ports:
+    {{- if and .Values.workload.deployment.ports (gt (len .Values.workload.deployment.ports) 0) }}
     - port: {{ .Values.workload.service.port }}
       targetPort: {{ (index .Values.workload.deployment.ports 0).containerPort }}
+      {{- if eq (default "ClusterIP" .Values.workload.service.type) "NodePort" }}
+      nodePort: {{ .Values.workload.service.nodePort | default 0 }}
+      {{- end }}
+    {{- else }}
+    - port: {{ .Values.workload.service.port }}
+      targetPort: {{ .Values.workload.service.port }}
+    {{- end }}
 {{- end }}

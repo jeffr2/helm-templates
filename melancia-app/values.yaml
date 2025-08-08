@@ -1,0 +1,23 @@
+platform:
+  workload:
+    deployment:
+      enabled: true
+      name: melancia-alpine
+      replicaCount: 1
+  
+      containers:
+        - name: alpine
+          enabled: true
+          image:
+            repository: alpine
+            tag: latest
+          envFrom:
+            - secretRef:
+                name: melancia-secret
+  
+    secret:
+      enabled: true
+      items:
+        - name: melancia-secret
+          data:
+            password: "12345"

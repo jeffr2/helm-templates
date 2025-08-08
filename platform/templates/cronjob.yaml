@@ -2,21 +2,63 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: {{ include "base-app.fullname" . }}
-  labels:
-    app: {{ include "base-app.name" . }}
+  name: {{ .Values.workload.cronjob.name }}
 spec:
-  schedule: "{{ .Values.workload.cronjob.schedule }}"
+  schedule: {{ .Values.workload.cronjob.schedule | quote }}
   jobTemplate:
     spec:
       template:
         spec:
+          {{- $initContainers := .Values.workload.cronjob.initContainers | default list }}
+          {{- $found := false }}
+          {{- range $initContainers }}
+            {{- if .enabled }}
+              {{- if not $found }}
+          initContainers:
+              {{- $_ := set $ "found" true }}
+              {{- end }}
+            - name: {{ .name }}
+              image: "{{ .image.repository }}:{{ .image.tag }}"
+              {{- if .command }}
+              command: {{ toJson .command }}
+              {{- end }}
+              {{- if .args }}
+              args: {{ toJson .args }}
+              {{- end }}
+              {{- if .env }}
+              env:
+                {{- range .env }}
+                - name: {{ .name }}
+                  value: {{ .value | quote }}
+                {{- end }}
+              {{- end }}
+              {{- if .envFrom }}
+              envFrom:
+                {{- range .envFrom }}
+                {{- if or (not (hasKey . "enabled")) .enabled }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+                {{- end }}
+              {{- end }}
+              {{- if .volumeMounts }}
+              volumeMounts:
+                {{- toYaml .volumeMounts | nindent 16 }}
+              {{- end }}
+              {{- if .resources }}
+              resources:
+                {{- toYaml .resources | nindent 16 }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+
           containers:
-            - name: job
+            - name: {{ printf "%s" (default .Release.Name .Values.workload.cronjob.containerName) | quote }}
               image: "{{ .Values.workload.cronjob.image.repository }}:{{ .Values.workload.cronjob.image.tag }}"
-              imagePullPolicy: {{ .Values.workload.cronjob.image.pullPolicy | default "IfNotPresent" }}
               {{- if .Values.workload.cronjob.command }}
               command: {{ toJson .Values.workload.cronjob.command }}
+              {{- end }}
+              {{- if .Values.workload.cronjob.args }}
+              args: {{ toJson .Values.workload.cronjob.args }}
               {{- end }}
               {{- if .Values.workload.cronjob.env }}
               env:
@@ -25,5 +67,25 @@ spec:
                   value: {{ .value | quote }}
                 {{- end }}
               {{- end }}
+              {{- if .Values.workload.cronjob.envFrom }}
+              envFrom:
+                {{- range .Values.workload.cronjob.envFrom }}
+                {{- if or (not (hasKey . "enabled")) .enabled }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+                {{- end }}
+              {{- end }}
+              {{- if .Values.workload.cronjob.volumeMounts }}
+              volumeMounts:
+                {{- toYaml .Values.workload.cronjob.volumeMounts | nindent 16 }}
+              {{- end }}
+              resources:
+                {{- toYaml .Values.workload.cronjob.resources | nindent 16 }}
+
+          {{- if .Values.workload.cronjob.volumes }}
+          volumes:
+            {{- toYaml .Values.workload.cronjob.volumes | nindent 12 }}
+          {{- end }}
+
           restartPolicy: OnFailure
 {{- end }}

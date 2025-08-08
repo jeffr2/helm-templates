@@ -1,0 +1,34 @@
+platform:
+  workload:
+    cronjob:
+      enabled: true
+      name: morango-cron
+      schedule: "*/5 * * * *"
+      image:
+        repository: docker.io/morango
+        tag: latest
+      volumes:
+        - name: morango-vol
+          persistentVolumeClaim:
+            claimName: morango-pvc
+  
+      volumeMounts:
+        - name: morango-vol
+          mountPath: /morango
+  
+      initContainers:
+        - name: busybox-init
+          enabled: true
+          image:
+            repository: busybox
+            tag: latest
+          command: ["sh", "-c"]
+          args: ["echo morango is coming"]
+  
+    persistentVolumeClaim:
+      enabled: true
+      items:
+        - name: morango
+          accessModes:
+            - ReadWriteOnce
+          storage: 1Gi

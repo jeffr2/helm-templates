@@ -37,10 +37,18 @@ spec:
         {{- toYaml .Values.workload.deployment.tolerations | nindent 8 }}
       {{- end }}
 
-      {{- if .Values.workload.deployment.initContainers }}
+      {{- /* InitContainers: só imprime se houver algum enabled */ -}}
+      {{- $hasInit := false }}
+      {{- range .Values.workload.deployment.initContainers }}
+        {{- if .enabled }}
+          {{- $hasInit = true }}
+        {{- end }}
+      {{- end }}
+
+      {{- if $hasInit }}
       initContainers:
         {{- range .Values.workload.deployment.initContainers }}
-        {{- if .enabled }}
+          {{- if .enabled }}
         - name: {{ .name }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
           {{- if .command }}
@@ -72,13 +80,22 @@ spec:
           resources:
             {{- toYaml .resources | nindent 12 }}
           {{- end }}
-        {{- end }}
+          {{- end }}
         {{- end }}
       {{- end }}
 
+      {{- /* Containers: só imprime se houver algum enabled */ -}}
+      {{- $hasContainers := false }}
+      {{- range .Values.workload.deployment.containers }}
+        {{- if .enabled }}
+          {{- $hasContainers = true }}
+        {{- end }}
+      {{- end }}
+
+      {{- if $hasContainers }}
       containers:
         {{- range .Values.workload.deployment.containers }}
-        {{- if .enabled }}
+          {{- if .enabled }}
         - name: {{ .name }}
           image: "{{ .image.repository }}:{{ .image.tag }}"
           {{- if .command }}
@@ -124,8 +141,9 @@ spec:
           resources:
             {{- toYaml .resources | nindent 12 }}
           {{- end }}
+          {{- end }}
         {{- end }}
-        {{- end }}
+      {{- end }}
 
       {{- if .Values.workload.deployment.volumes }}
       volumes:
