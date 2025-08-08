@@ -1,0 +1,18 @@
+{{- if .Values.workload.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "platform.named" (dict "name" (include "platform.fullname" .) "suffix" "ingress") }}
+spec:
+  rules:
+    - host: {{ .Values.workload.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "platform.named" (dict "name" (include "platform.fullname" .) "suffix" "svc") }}
+                port:
+                  number: {{ .Values.workload.service.port }}
+{{- end }}
